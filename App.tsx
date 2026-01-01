@@ -1,8 +1,8 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { RationCard, AppView } from './types.ts';
 import { storage } from './storage.ts';
-import { Plus, Search, Trash2, Edit3, Info, History } from 'lucide-react';
+import { Plus, Search, Trash2, Edit3, Info, History, Download, Upload, BarChart3, X } from 'lucide-react';
 import CardForm from './components/CardForm.tsx';
 
 const App: React.FC = () => {
@@ -10,6 +10,8 @@ const App: React.FC = () => {
   const [cards, setCards] = useState<RationCard[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [editingCard, setEditingCard] = useState<RationCard | null>(null);
+  const [showStats, setShowStats] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setCards(storage.getCards());
@@ -34,6 +36,48 @@ const App: React.FC = () => {
     setView('EDIT');
   };
 
+  const exportData = () => {
+    const dataStr = JSON.stringify(cards, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+    const exportFileDefaultName = `back_tamween_${new Date().toISOString().slice(0, 10)}.json`;
+
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+  };
+
+  const importData = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const importedCards = JSON.parse(e.target?.result as string);
+        if (Array.isArray(importedCards)) {
+          if (confirm('سيتم استبدال جميع البيانات الحالية بالبيانات المستوردة. هل أنت متأكد؟')) {
+            localStorage.setItem('ration_cards_db', JSON.stringify(importedCards));
+            setCards(importedCards);
+            alert('تم استيراد البيانات بنجاح!');
+          }
+        }
+      } catch (err) {
+        alert('فشل استيراد الملف. تأكد من أنه ملف JSON صحيح.');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const stats = useMemo(() => {
+    return cards.reduce((acc, card) => ({
+      totalMembers: acc.totalMembers + card.membersCount,
+      totalLoaves: acc.totalLoaves + card.withdrawnLoaves,
+      unpaidAmount: acc.unpaidAmount + (card.isPaid ? 0 : 1), // Count unpaid cards
+      totalDebt: acc.totalDebt + (card.isPaid ? 0 : (card.withdrawnLoaves * 0.20)) // Example calc: 0.20 per loaf debt
+    }), { totalMembers: 0, totalLoaves: 0, unpaidAmount: 0, totalDebt: 0 });
+  }, [cards]);
+
   const filteredCards = useMemo(() => {
     return cards
       .filter(card => card.ownerName.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -44,26 +88,57 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-slate-50 pb-24 text-slate-800">
       <header className="bg-emerald-700 text-white p-4 shadow-md sticky top-0 z-10">
         <div className="max-w-md mx-auto flex justify-between items-center">
-          <h1 className="text-xl font-bold">بطاقات التموين</h1>
-          {view === 'LIST' && (
-            <div className="bg-emerald-600 px-3 py-1 rounded-full text-sm font-medium">
-              الإجمالي: {cards.length}
-            </div>
-          )}
-          {view !== 'LIST' && (
-            <button 
-              onClick={() => { setView('LIST'); setEditingCard(null); }}
-              className="text-white flex items-center gap-1 text-sm bg-emerald-800 px-3 py-1 rounded-lg"
-            >
-              إلغاء
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold">بطاقات التموين</h1>
+          </div>
+          
+          <div className="flex gap-2">
+            {view === 'LIST' && (
+              <button onClick={() => setShowStats(!showStats)} className="p-2 hover:bg-emerald-600 rounded-lg transition-colors">
+                <BarChart3 size={20} />
+              </button>
+            )}
+            {view !== 'LIST' && (
+              <button 
+                onClick={() => { setView('LIST'); setEditingCard(null); }}
+                className="text-white flex items-center gap-1 text-sm bg-emerald-800 px-3 py-1 rounded-lg"
+              >
+                إلغاء
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
       <main className="max-w-md mx-auto p-4">
         {view === 'LIST' ? (
           <>
+            {/* Stats Overview */}
+            {showStats && (
+              <div className="bg-white rounded-2xl p-4 shadow-sm border border-emerald-100 mb-6 grid grid-cols-2 gap-3 animate-in fade-in zoom-in-95">
+                <div className="bg-emerald-50 p-3 rounded-xl text-center">
+                  <p className="text-xs text-emerald-600">إجمالي الأفراد</p>
+                  <p className="text-xl font-bold text-emerald-800">{stats.totalMembers}</p>
+                </div>
+                <div className="bg-blue-50 p-3 rounded-xl text-center">
+                  <p className="text-xs text-blue-600">إجمالي العيش</p>
+                  <p className="text-xl font-bold text-blue-800">{stats.totalLoaves}</p>
+                </div>
+                <div className="bg-amber-50 p-3 rounded-xl text-center">
+                  <p className="text-xs text-amber-600">غير مدفوع</p>
+                  <p className="text-xl font-bold text-amber-800">{stats.unpaidAmount}</p>
+                </div>
+                <div className="bg-slate-50 p-3 rounded-xl text-center">
+                  <p className="text-xs text-slate-500">إدارة البيانات</p>
+                  <div className="flex justify-center gap-2 mt-1">
+                    <button onClick={exportData} title="نسخ احتياطي"><Download size={18} className="text-emerald-600" /></button>
+                    <button onClick={() => fileInputRef.current?.click()} title="استيراد"><Upload size={18} className="text-blue-600" /></button>
+                    <input type="file" ref={fileInputRef} onChange={importData} accept=".json" className="hidden" />
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="relative mb-6">
               <input
                 type="text"
