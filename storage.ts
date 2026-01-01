@@ -1,5 +1,5 @@
 
-import { RationCard } from './types';
+import { RationCard } from './types.ts';
 
 const STORAGE_KEY = 'ration_cards_db';
 

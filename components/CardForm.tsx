@@ -1,8 +1,8 @@
 
-import React, { useState, useEffect } from 'react';
-import { RationCard } from '../types';
-import { LOAVES_PER_PERSON_PER_DAY, MAX_DAYS_WITHDRAWAL, MAX_LOAVES_PER_PERSON } from '../constants';
-import { CheckCircle, AlertTriangle } from 'lucide-react';
+import React, { useState } from 'react';
+import { RationCard } from '../types.ts';
+import { MAX_LOAVES_PER_PERSON } from '../constants.ts';
+import { CheckCircle } from 'lucide-react';
 
 interface Props {
   initialData: RationCard | null;
@@ -28,7 +28,6 @@ const CardForm: React.FC<Props> = ({ initialData, onSave }) => {
       ...formData,
       id: initialData?.id || Date.now().toString(),
       createdAt: initialData?.createdAt || new Date().toISOString(),
-      // Force refresh the date if it's a new entry (optional logic)
       lastWithdrawalDate: new Date().toISOString() 
     };
     onSave(newCard);
@@ -45,7 +44,6 @@ const CardForm: React.FC<Props> = ({ initialData, onSave }) => {
         {initialData ? 'تعديل بيانات البطاقة' : 'إضافة بطاقة جديدة'}
       </h2>
 
-      {/* Name */}
       <div className="space-y-1">
         <label className="text-sm font-medium text-slate-500 block">اسم صاحب البطاقة</label>
         <input
@@ -59,7 +57,6 @@ const CardForm: React.FC<Props> = ({ initialData, onSave }) => {
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        {/* Members Count */}
         <div className="space-y-1">
           <label className="text-sm font-medium text-slate-500 block">عدد الأفراد</label>
           <input
@@ -72,7 +69,6 @@ const CardForm: React.FC<Props> = ({ initialData, onSave }) => {
           />
         </div>
 
-        {/* Withdrawn Loaves */}
         <div className="space-y-1">
           <label className="text-sm font-medium text-slate-500 block">العيش المسحوب</label>
           <input
@@ -87,7 +83,6 @@ const CardForm: React.FC<Props> = ({ initialData, onSave }) => {
         </div>
       </div>
 
-      {/* Calculation Hint */}
       <div className="bg-blue-50 p-3 rounded-xl flex items-start gap-3 text-blue-800 text-sm">
         <div className="mt-0.5"><CheckCircle size={16} /></div>
         <div>
@@ -96,7 +91,6 @@ const CardForm: React.FC<Props> = ({ initialData, onSave }) => {
         </div>
       </div>
 
-      {/* Date (Auto/Manual) */}
       <div className="space-y-1">
         <label className="text-sm font-medium text-slate-500 block">تاريخ السحب</label>
         <input
@@ -107,7 +101,6 @@ const CardForm: React.FC<Props> = ({ initialData, onSave }) => {
         />
       </div>
 
-      {/* Payment Status */}
       <div className="space-y-3 pt-2">
         <p className="text-sm font-medium text-slate-500">حالة الدفع</p>
         <div className="flex gap-4">
@@ -132,7 +125,6 @@ const CardForm: React.FC<Props> = ({ initialData, onSave }) => {
         </div>
       </div>
 
-      {/* Amount if paid */}
       {formData.isPaid && (
         <div className="space-y-1 animate-in zoom-in-95 duration-200">
           <label className="text-sm font-medium text-slate-500 block">المبلغ المدفوع (جنيه)</label>
@@ -147,7 +139,6 @@ const CardForm: React.FC<Props> = ({ initialData, onSave }) => {
         </div>
       )}
 
-      {/* Notes */}
       <div className="space-y-1">
         <label className="text-sm font-medium text-slate-500 block">ملاحظات</label>
         <textarea
@@ -159,7 +150,6 @@ const CardForm: React.FC<Props> = ({ initialData, onSave }) => {
         />
       </div>
 
-      {/* Submit */}
       <button
         type="submit"
         className="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-emerald-700 transition-all active:scale-95"

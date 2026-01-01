@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { RationCard, AppView } from './types';
-import { storage } from './storage';
-import { Plus, Search, Trash2, Edit3, ChevronRight, Info, AlertCircle, CheckCircle2, History } from 'lucide-react';
-import CardForm from './components/CardForm';
+import { RationCard, AppView } from './types.ts';
+import { storage } from './storage.ts';
+import { Plus, Search, Trash2, Edit3, Info, History } from 'lucide-react';
+import CardForm from './components/CardForm.tsx';
 
 const App: React.FC = () => {
   const [view, setView] = useState<AppView>('LIST');
@@ -11,7 +11,6 @@ const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [editingCard, setEditingCard] = useState<RationCard | null>(null);
 
-  // Load cards on mount
   useEffect(() => {
     setCards(storage.getCards());
   }, []);
@@ -43,7 +42,6 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 pb-24 text-slate-800">
-      {/* Header */}
       <header className="bg-emerald-700 text-white p-4 shadow-md sticky top-0 z-10">
         <div className="max-w-md mx-auto flex justify-between items-center">
           <h1 className="text-xl font-bold">بطاقات التموين</h1>
@@ -66,7 +64,6 @@ const App: React.FC = () => {
       <main className="max-w-md mx-auto p-4">
         {view === 'LIST' ? (
           <>
-            {/* Search Box */}
             <div className="relative mb-6">
               <input
                 type="text"
@@ -78,7 +75,6 @@ const App: React.FC = () => {
               <Search className="absolute right-4 top-3.5 text-slate-400" size={20} />
             </div>
 
-            {/* List */}
             {filteredCards.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-slate-400 space-y-4">
                 <Info size={48} strokeWidth={1.5} />
@@ -131,7 +127,6 @@ const App: React.FC = () => {
               </div>
             )}
 
-            {/* Floating Action Button */}
             <button
               onClick={() => setView('ADD')}
               className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-emerald-600 text-white w-14 h-14 rounded-full shadow-lg shadow-emerald-200 flex items-center justify-center hover:bg-emerald-700 active:scale-95 transition-all z-20"
